@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 
 // API 서버 URL을 환경변수에서 가져옵니다
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+// Vercel 배포 시에는 상대 경로로 API를 호출합니다
+const API_URL = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3000');
 
 const loadingMessages = [
   "의학 용어를 쉬운 말로 바꾸는 중...",
