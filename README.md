@@ -91,7 +91,7 @@ export default tseslint.config({
    npm install
    ```
 
-3. Vercel CLI 설치 (서버리스 함수 테스트용)
+3. Vercel CLI 설치 (필수)
    ```bash
    npm install -g vercel
    ```
@@ -102,12 +102,18 @@ export default tseslint.config({
      OPENAI_API_KEY=your_openai_api_key_here
      ```
 
-5. Vercel CLI로 개발 서버 실행
+5. 개발 서버 실행
    ```bash
-   vercel dev
+   npm run dev
    ```
+   이 명령어는 `vercel dev`를 실행하여 프론트엔드와 API를 함께 제공합니다.
 
 6. 브라우저에서 `http://localhost:3000` 접속
+
+### 주의사항
+
+- 이 프로젝트는 Vercel 서버리스 함수를 사용하기 때문에, 로컬 개발 시에도 Vercel CLI가 필요합니다.
+- 순수 Vite 개발 서버가 필요한 경우 `npm run vite-dev`를 사용할 수 있지만, API 기능은 작동하지 않습니다.
 
 ## Vercel 배포 가이드
 

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 
-// 환경 변수에서 OpenAI API 키를 가져올 수 없으므로 사용자에게 입력 받도록 합니다
+// OpenAI API 키를 .env 파일에서 직접 가져올 수 없으므로, 빌드 시 설정된 환경 변수 사용
+// 또는 API 키는 백엔드에서 관리하는 것이 보안상 안전합니다
 const exampleTexts = {
   somzz: `불면증 디지털치료기기 솜즈(Somzz)
 본 제품은 만성불면증 치료의 목적으로 설계된 소프트웨어 의료기기로, 실제 임상진료 현장의 표준치료인 불면증인지행동치료법 (CBT-I; Cognitive Behavioral Therapy for Insomnia)의 프로토콜 (자극조절법, 수면제한법, 수면습관교육법, 이완요법 및 인지치료법)을 모바일용 어플리케이션에 체계적인 알고리즘을 순차적으로 적용하여 구현되었다. 인지행동치료는 사고와 행동을 조절함으로써 증상을 개선시키는 정신치료요법이다. 인지치료는 불면과 관련된 역기능적 신념을 교정하여 건강한 수면 습관을 기를 수 있게 하고, 행동치료는 자극조절요법, 수면제한요법, 이완요법을 통해 수면의 질이 향상되도록 한다. 이 내용을 바탕으로 불면증 환자들에게 교육, 실시간 피드백, 행동중재 및 푸시알림 메시지 등을 6~9주간 제공하여 수면효율을 증가시키고 결과적으로 환자의 불면증을 개선한다.`
@@ -52,7 +53,7 @@ function App() {
     
     setIsLoading(true)
     setError('')
-    console.log('API 요청 시작: /api/openai')
+    console.log('API 요청 시작: OpenAI API 직접 호출')
 
     try {
       const requestData = {
@@ -79,11 +80,13 @@ ${inputText}`
       
       console.log('API 요청 데이터 준비 완료');
       
-      // 서버리스 함수 호출
-      const response = await fetch('/api/openai', {
+      // OpenAI API 직접 호출 - 프로덕션에서는 보안을 위해 서버 측에서 처리하는 것이 좋습니다
+      // 주의: 이 방식은 프론트엔드에서 API 키가 노출될 수 있습니다
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY || ''}`
         },
         body: JSON.stringify(requestData)
       });
@@ -93,7 +96,8 @@ ${inputText}`
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API 오류 응답:', errorText);
-        throw new Error(`서버 응답이 올바르지 않습니다. 상태 코드: ${response.status}`);
+        console.error('응답 상태:', response.status, response.statusText);
+        throw new Error(`서버 응답이 올바르지 않습니다. 상태 코드: ${response.status}. 응답: ${errorText.substring(0, 150)}...`);
       }
 
       const data = await response.json();
