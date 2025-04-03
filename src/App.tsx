@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 
-// API 서버 URL을 환경변수에서 가져옵니다
-// Vercel 배포 시에는 상대 경로로 API를 호출합니다
-const API_URL = import.meta.env.PROD ? '' : (import.meta.env.VITE_API_URL || 'http://localhost:3000');
+// 환경 변수에서 OpenAI API 키를 가져올 수 없으므로 사용자에게 입력 받도록 합니다
+const exampleTexts = {
+  somzz: `불면증 디지털치료기기 솜즈(Somzz)
+본 제품은 만성불면증 치료의 목적으로 설계된 소프트웨어 의료기기로, 실제 임상진료 현장의 표준치료인 불면증인지행동치료법 (CBT-I; Cognitive Behavioral Therapy for Insomnia)의 프로토콜 (자극조절법, 수면제한법, 수면습관교육법, 이완요법 및 인지치료법)을 모바일용 어플리케이션에 체계적인 알고리즘을 순차적으로 적용하여 구현되었다. 인지행동치료는 사고와 행동을 조절함으로써 증상을 개선시키는 정신치료요법이다. 인지치료는 불면과 관련된 역기능적 신념을 교정하여 건강한 수면 습관을 기를 수 있게 하고, 행동치료는 자극조절요법, 수면제한요법, 이완요법을 통해 수면의 질이 향상되도록 한다. 이 내용을 바탕으로 불면증 환자들에게 교육, 실시간 피드백, 행동중재 및 푸시알림 메시지 등을 6~9주간 제공하여 수면효율을 증가시키고 결과적으로 환자의 불면증을 개선한다.`
+}
 
 const loadingMessages = [
   "의학 용어를 쉬운 말로 바꾸는 중...",
@@ -12,11 +14,6 @@ const loadingMessages = [
   "의사 선생님이 친절하게 설명하는 중...",
   "복잡한 내용을 쉽게 풀어쓰는 중..."
 ]
-
-const exampleTexts = {
-  somzz: `불면증 디지털치료기기 솜즈(Somzz)
-본 제품은 만성불면증 치료의 목적으로 설계된 소프트웨어 의료기기로, 실제 임상진료 현장의 표준치료인 불면증인지행동치료법 (CBT-I; Cognitive Behavioral Therapy for Insomnia)의 프로토콜 (자극조절법, 수면제한법, 수면습관교육법, 이완요법 및 인지치료법)을 모바일용 어플리케이션에 체계적인 알고리즘을 순차적으로 적용하여 구현되었다. 인지행동치료는 사고와 행동을 조절함으로써 증상을 개선시키는 정신치료요법이다. 인지치료는 불면과 관련된 역기능적 신념을 교정하여 건강한 수면 습관을 기를 수 있게 하고, 행동치료는 자극조절요법, 수면제한요법, 이완요법을 통해 수면의 질이 향상되도록 한다. 이 내용을 바탕으로 불면증 환자들에게 교육, 실시간 피드백, 행동중재 및 푸시알림 메시지 등을 6~9주간 제공하여 수면효율을 증가시키고 결과적으로 환자의 불면증을 개선한다.`
-}
 
 function LoadingIndicator() {
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0)
@@ -52,21 +49,18 @@ function App() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
     setIsLoading(true)
     setError('')
+    console.log('API 요청 시작: /api/openai')
 
     try {
-      const response = await fetch(`${API_URL}/api/openai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: "user",
-              content: `다음 설명을 10세 정도의 문해력 수준으로도 쉽게 이해할 수 있도록 최대한 쉽게 풀어 써 주세요.
+      const requestData = {
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: "user",
+            content: `다음 설명을 10세 정도의 문해력 수준으로도 쉽게 이해할 수 있도록 최대한 쉽게 풀어 써 주세요.
 
 아래 조건을 지켜 주세요:
 
@@ -77,18 +71,33 @@ function App() {
 
 다음 텍스트를 위 조건에 맞게 변환해주세요:
 ${inputText}`
-            }
-          ],
-          temperature: 0,
-          top_p: 1
-        })
+          }
+        ],
+        temperature: 0,
+        top_p: 1
+      };
+      
+      console.log('API 요청 데이터 준비 완료');
+      
+      // 서버리스 함수 호출
+      const response = await fetch('/api/openai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData)
       });
+      
+      console.log('API 응답 상태:', response.status);
 
       if (!response.ok) {
-        throw new Error('서버 응답이 올바르지 않습니다.');
+        const errorText = await response.text();
+        console.error('API 오류 응답:', errorText);
+        throw new Error(`서버 응답이 올바르지 않습니다. 상태 코드: ${response.status}`);
       }
 
       const data = await response.json();
+      console.log('API 응답 성공');
       setTransformedText(data.choices[0].message.content || '');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다'

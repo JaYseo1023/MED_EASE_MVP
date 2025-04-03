@@ -67,8 +67,8 @@ export default tseslint.config({
 ## 기술 스택
 
 - Frontend: React, TypeScript, Vite, TailwindCSS
+- Backend: Vercel Serverless Functions
 - API: OpenAI GPT API
-- 배포: Vercel Serverless Functions
 
 ## 로컬 개발 환경 설정
 
@@ -76,6 +76,7 @@ export default tseslint.config({
 
 - Node.js 18.0.0 이상
 - OpenAI API 키
+- Vercel CLI (로컬에서 서버리스 함수 테스트용)
 
 ### 설치 및 실행 방법
 
@@ -90,32 +91,60 @@ export default tseslint.config({
    npm install
    ```
 
-3. 환경 변수 설정
+3. Vercel CLI 설치 (서버리스 함수 테스트용)
+   ```bash
+   npm install -g vercel
+   ```
+
+4. 환경 변수 설정
    - 루트 디렉토리에 `.env` 파일 생성
      ```
      OPENAI_API_KEY=your_openai_api_key_here
      ```
 
-4. 개발 서버 실행
+5. Vercel CLI로 개발 서버 실행
    ```bash
-   npm run dev
+   vercel dev
    ```
 
-5. 브라우저에서 `http://localhost:5173` 접속
+6. 브라우저에서 `http://localhost:3000` 접속
 
 ## Vercel 배포 가이드
 
 1. [Vercel](https://vercel.com)에 가입하고 GitHub 계정을 연결합니다.
 2. 저장소를 Vercel로 가져오기(Import)합니다.
-3. 환경 변수 설정:
+3. 다음 설정으로 프로젝트를 구성합니다:
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+   - Install Command: `npm install`
+4. 환경 변수 설정:
    - `OPENAI_API_KEY`: OpenAI API 키
-4. 배포를 진행합니다.
+5. 배포를 진행합니다.
 
-이 프로젝트는 Vercel Serverless Functions를 사용하여 API 요청을 처리합니다. 별도의 백엔드 서버 구성이 필요하지 않습니다.
+## 프로젝트 구조
+
+```
+/
+├── api/              # Vercel 서버리스 함수
+│   └── openai.js     # OpenAI API 프록시 엔드포인트
+├── src/              # 프론트엔드 소스 코드
+│   ├── App.tsx       # 메인 애플리케이션 컴포넌트
+│   └── ...
+└── vercel.json       # Vercel 배포 설정
+```
+
+## 작동 방식
+
+1. 프론트엔드는 사용자 입력을 받아 `/api/openai` 서버리스 함수로 요청을 보냅니다.
+2. 서버리스 함수는 환경 변수에 저장된 API 키를 사용하여 OpenAI API를 호출합니다.
+3. 응답을 받아 프론트엔드로 반환합니다.
+
+이 구조의 장점은 API 키가 클라이언트에 노출되지 않고 서버 측에서 안전하게 API 호출을 처리한다는 것입니다.
 
 ## 주의사항
 
 - OpenAI API 키는 절대 공개 저장소에 커밋하지 않도록 주의하세요.
+- Vercel 대시보드에서 환경 변수를 안전하게 설정하세요.
 - 요금이 발생할 수 있는 API 사용량을 모니터링하세요.
 
 ## 라이선스
